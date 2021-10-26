@@ -20,7 +20,7 @@ public class PayloadDumper {
 
     private RandomAccessFile mInputFile;
 
-    PayloadDumper(File inputFile) throws IOException {
+    public PayloadDumper(File inputFile) throws IOException {
         mInputFile = new RandomAccessFile(inputFile, "r");
         checkMagic();
         checkFileFormatVersion();
