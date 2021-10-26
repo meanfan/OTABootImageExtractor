@@ -1,72 +1,31 @@
 package top.meansome.otabootimageextractor.utils;
 
-import android.util.Log;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 public class UnzipUtil
 {
-    private String zipFile;
-    private String location;
 
-    public UnzipUtil(String zipFile, String location)
-    {
-        this.zipFile = zipFile;
-        this.location = location;
-        dirChecker("");
-    }
-
-    public void unzip()
-    {
-        try
-        {
-            FileInputStream fin = new FileInputStream(zipFile);
-            ZipInputStream zin = new ZipInputStream(fin);
-            ZipEntry ze = null;
-            while ((ze = zin.getNextEntry()) != null)
-            {
-                Log.v("Decompress", "Unzipping " + ze.getName());
-
-                if(ze.isDirectory())
+    public static void unzip(InputStream zipFile, OutputStream unzippedFile) throws IOException {
+        ZipInputStream zin = new ZipInputStream(zipFile);
+        ZipEntry ze = null;
+        while ((ze = zin.getNextEntry()) != null) {
+            if(!ze.isDirectory() && ze.getName().endsWith(".bin")){
+                byte[] buffer = new byte[8192];
+                int len;
+                while ((len = zin.read(buffer)) != -1)
                 {
-                    dirChecker(ze.getName());
+                    unzippedFile.write(buffer, 0, len);
                 }
-                else
-                {
-                    FileOutputStream fout = new FileOutputStream(location + ze.getName());
-
-                    byte[] buffer = new byte[8192];
-                    int len;
-                    while ((len = zin.read(buffer)) != -1)
-                    {
-                        fout.write(buffer, 0, len);
-                    }
-                    fout.close();
-
-                    zin.closeEntry();
-
-                }
-
+                break;
+            }else{
+                zin.skip(ze.getSize());
             }
-            zin.close();
         }
-        catch(Exception e)
-        {
-            Log.e("Decompress", "unzip", e);
-        }
+        zin.close();
 
-    }
-
-    private void dirChecker(String dir)
-    {
-        File f = new File(location + dir);
-        if(!f.isDirectory())
-        {
-            f.mkdirs();
-        }
     }
 }
